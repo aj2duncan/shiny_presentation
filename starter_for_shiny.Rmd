@@ -23,8 +23,8 @@ shinyApp(ui = shinyUI(fluidPage(
    # Sidebar with a slider input for number of bins 
    sidebarLayout(
       sidebarPanel(
-         sliderInput("bins",
-                     "Number of bins:",
+         sliderInput(inputId = "bins",
+                     label = "Number of bins:",
                      min = 1,
                      max = 50,
                      value = 30)
@@ -32,8 +32,8 @@ shinyApp(ui = shinyUI(fluidPage(
       
       # Show a plot of the generated distribution
       mainPanel(
-         plotOutput("disPlot"),
-         textOutput("disText")
+         plotOutput(outputId = "disPlot"),
+         textOutput(outputId = "disText")
       )
    )
 )),
@@ -59,19 +59,15 @@ server = function(input, output) {
 
 ## What is Shiny?
 
+- `shiny` package
+- Turns `R` into _html_, _css_ and _javascript_.
+- Can customise and style it. 
 
 ## Should I be interested?
 
 - Sharing
 - Interactive
 - Online
-
-
-## How does it work?
-
-- `shiny` package
-- Turns `R` into _html_, _css_ and _javascript_.
-- Can customise and style it. 
 
 ## Sharing
 
@@ -91,12 +87,12 @@ ui <- shinyUI(fluidPage(
    titlePanel("Old Faithful Geyser Data"),
    sidebarLayout(
       sidebarPanel(
-         sliderInput(id = "bins", label = "Number of bins:",
+         sliderInput(inputId = "bins", label = "Number of bins:",
                      min = 1, max = 50, value = 30)
          ),
       mainPanel(
-         plotOutput("disPlot"),
-         textOutput("disText")
+         plotOutput(outputId = "disPlot"),
+         textOutput(outputId = "disText")
       )
    )
 ))
@@ -132,8 +128,8 @@ shinyApp(ui = shinyUI(fluidPage(
    # Sidebar with a slider input for number of bins 
    sidebarLayout(
       sidebarPanel(
-         sliderInput("bins",
-                     "Number of bins:",
+         sliderInput(inputId = "bins",
+                     label = "Number of bins:",
                      min = 1,
                      max = 50,
                      value = 30)
@@ -141,8 +137,8 @@ shinyApp(ui = shinyUI(fluidPage(
       
       # Show a plot of the generated distribution
       mainPanel(
-         plotOutput("disPlot"),
-         textOutput("disText")
+         plotOutput(outputId = "disPlot"),
+         textOutput(outputId = "disText")
       )
    )
 )),
@@ -170,16 +166,180 @@ server = function(input, output) {
 ## Inputs and Outputs
 
 - There are a wide range of inputs and outputs. 
+- Different styles are built in. 
 
 ```{r shiny_io, echo = FALSE, results = 'asis'}
 shiny_io = data_frame(
-  inputs = c("Check box", "Radio Button", "Dates", "Numeric", "Text",
+  inputs = c("Check box, Radio Button","Dates, Numeric  or Text",
              "File Upload", "Slider", "Drop down (select)"),
-  outputs = c("HTML", "Plots", "Tables", "Files to download", "Text", 
-              rep("", 3)))
+  outputs = c("HTML", "Plots", "Tables", "Files to download", "Text"))
 kable(shiny_io)
 ```
 
+
+## Reactive Expressions
+
+- All the `render` functions are _reactive_. They listen!
+- Can create other _reactive_ functions that listen.
+- Problem is when a function takes a long time.
+- Can use `isolate()` with `actionButton()` or `submitButton`.
+
+
+## `isolate` with `actionButton()`
+
+- Can choose to `isolate` one or more inputs, then listen for `actionButton()`.
+- Add an `actionButton()` to the `ui`.
+
+```{r isolate_ui, eval = F}
+ui <- shinyUI(fluidPage(
+   titlePanel("Old Faithful Geyser Data"),
+   sidebarLayout(
+      sidebarPanel(
+         sliderInput(inputId = "bins", label = "Number of bins:",
+                     min = 1, max = 50, value = 30),
+         actionButton(inputId = "plot", label = "Action Button")
+         ),
+      mainPanel(
+         plotOutput(outputId = "disPlot"),
+         textOutput(outputId = "disText")
+      )
+   )
+))
+```
+
+## `isolate` with `actionButton()`
+
+- In `server` we `isolate` the inputs we want to but listen to the `actionButton`.
+
+```{r isolate_server, eval = F}
+server <- shinyServer(function(input, output) {
+   output$disPlot <- renderPlot({
+     input$plot # listen to the actionButton
+      x    <- faithful[, 2] 
+      isolate({ # isolate the plots which depend on the 'bins' input
+        bins <- seq(min(x), max(x), length.out = input$bins + 1)
+        hist(x, breaks = bins, col = 'darkgray', border = 'white')
+      })
+   })
+   output$disText <- renderText({
+     # could isolate this if we wanted 
+     paste("Number of bins:", input$bins)
+   })
+})
+```
+
+
+## The App
+
+```{r app_3rd_time, echo = FALSE}
+shinyApp(ui = shinyUI(fluidPage(
+   
+   # Application title
+   titlePanel("Old Faithful Geyser Data"),
+   
+   # Sidebar with a slider input for number of bins 
+   sidebarLayout(
+      sidebarPanel(
+         sliderInput(inputId = "bins",
+                     label = "Number of bins:",
+                     min = 1,
+                     max = 50,
+                     value = 30),
+         actionButton(inputId = "plot", label = "Action Button")
+      ),
+      
+      # Show a plot of the generated distribution
+      mainPanel(
+         plotOutput(outputId = "disPlot"),
+         textOutput(outputId = "disText")
+      )
+   )
+)),
+
+# Define server logic required to draw a histogram
+server = function(input, output) {
+   
+   output$disPlot <- renderPlot({
+     input$plot
+      # generate bins based on input$bins from ui.R
+      x    <- faithful[, 2] 
+      isolate({
+      bins <- seq(min(x), max(x), length.out = input$bins + 1)
+      
+      # draw the histogram with the specified number of bins
+      hist(x, breaks = bins, col = 'darkgray', border = 'white')
+      })
+   })
+   output$disText <- renderText({
+     paste("Number of bins:", input$bins)
+   })
+})
+```
+
+## The `submitButton()`
+
+- The alternative is to add a `submitButton()`.
+- This causes everything to wait. 
+- Just change the `ui`. 
+
+```{r submit_ui, eval = F}
+ui <- shinyUI(fluidPage(
+   titlePanel("Old Faithful Geyser Data"),
+   sidebarLayout(
+      sidebarPanel(
+         sliderInput(inputId = "bins", label = "Number of bins:",
+                     min = 1, max = 50, value = 30),
+         submitButton(text = "Submit Button")
+         ),
+      mainPanel(
+         plotOutput(outputId = "disPlot"),
+         textOutput(outputId = "disText")
+      )
+   )
+))
+```
+
+## The App
+```{r app_4th_time, echo = FALSE}
+shinyApp(ui = shinyUI(fluidPage(
+   
+   # Application title
+   titlePanel("Old Faithful Geyser Data"),
+   
+   # Sidebar with a slider input for number of bins 
+   sidebarLayout(
+      sidebarPanel(
+         sliderInput(inputId = "bins",
+                     label = "Number of bins:",
+                     min = 1,
+                     max = 50,
+                     value = 30),
+         submitButton(text = "Submit Button")
+      ),
+      
+      # Show a plot of the generated distribution
+      mainPanel(
+         plotOutput(outputId = "disPlot"),
+         textOutput(outputId = "disText")
+      )
+   )
+)),
+
+# Define server logic required to draw a histogram
+server = function(input, output) {
+   
+   output$disPlot <- renderPlot({
+      # generate bins based on input$bins from ui.R
+      x    <- faithful[, 2]
+      bins <- seq(min(x), max(x), length.out = input$bins + 1)
+      # draw the histogram with the specified number of bins
+      hist(x, breaks = bins, col = 'darkgray', border = 'white')
+   })
+   output$disText <- renderText({
+     paste("Number of bins:", input$bins)
+   })
+})
+```
 
 
 
