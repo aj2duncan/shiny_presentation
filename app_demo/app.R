@@ -27,13 +27,14 @@ ui <- shinyUI(fluidPage(
       
       # Show a plot of the generated distribution
       mainPanel(
-         plotOutput("distPlot")
+         plotOutput("distPlot"),
+         textOutput("disttext")
       )
    )
 ))
 
 # Define server logic required to draw a histogram
-server <- shinyServer(function(input, output) {
+server <- function(input, output) {
    
    output$distPlot <- renderPlot({
       # generate bins based on input$bins from ui.R
@@ -42,8 +43,13 @@ server <- shinyServer(function(input, output) {
       
       # draw the histogram with the specified number of bins
       hist(x, breaks = bins, col = 'darkgray', border = 'white')
+      
+      
    })
-})
+   output$disttext <- renderText({
+     paste("Number of bins:", input$bins)
+   })
+}
 
 # Run the application 
 shinyApp(ui = ui, server = server)

@@ -1,33 +1,166 @@
 ---
 title: "A Starter for Shiny"
+author: "Andrew Duncan"
+date: ""
 output: ioslides_presentation
+runtime: shiny
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(warning = F, comment = NA, message = F)
 ```
 
 ## What is Shiny?
 
-This is an R Markdown presentation. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+```{r, echo = FALSE}
+shinyApp(ui = shinyUI(fluidPage(
+   
+   # Application title
+   titlePanel("Old Faithful Geyser Data"),
+   
+   # Sidebar with a slider input for number of bins 
+   sidebarLayout(
+      sidebarPanel(
+         sliderInput("bins",
+                     "Number of bins:",
+                     min = 1,
+                     max = 50,
+                     value = 30)
+      ),
+      
+      # Show a plot of the generated distribution
+      mainPanel(
+         plotOutput("disPlot"),
+         textOutput("disText")
+      )
+   )
+)),
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document.
-
-## Slide with Bullets
-
-- Bullet 1
-- Bullet 2
-- Bullet 3
-
-## Slide with R Output
-
-```{r cars, echo = TRUE}
-summary(cars)
+# Define server logic required to draw a histogram
+server = function(input, output) {
+   
+   output$disPlot <- renderPlot({
+      # generate bins based on input$bins from ui.R
+      x    <- faithful[, 2] 
+      bins <- seq(min(x), max(x), length.out = input$bins + 1)
+      
+      # draw the histogram with the specified number of bins
+      hist(x, breaks = bins, col = 'darkgray', border = 'white')
+      
+      
+   })
+   output$disText <- renderText({
+     paste("Number of bins:", input$bins)
+   })
+})
 ```
 
-## Slide with Plot
+## What is Shiny?
 
-```{r pressure}
-plot(pressure)
+
+## Should I be interested?
+
+- Sharing
+- Interactive
+- Online
+
+
+## How does it work?
+
+- `shiny` package
+- Turns `R` into _html_, _css_ and _javascript_.
+- Can customise and style it. 
+
+## Sharing
+
+- Online
+    + shiny server
+    + shinyapps.io
+- Share the code directly
+
+## Some technical details
+
+- Two parts. `ui` and `server`.
+- `ui` contains the things the user sees and can change.
+- Split into _inputs_ and _outputs_.
+
+```{r, eval = F}
+ui <- shinyUI(fluidPage(
+   titlePanel("Old Faithful Geyser Data"),
+   sidebarLayout(
+      sidebarPanel(
+         sliderInput(id = "bins", label = "Number of bins:",
+                     min = 1, max = 50, value = 30)
+         ),
+      mainPanel(
+         plotOutput("disPlot"),
+         textOutput("disText")
+      )
+   )
+))
+```
+
+## Some technical details
+
+- `server` contains the things the user doesn't see (your `R` code).
+- needs function dependent on _input_ and _output_.
+- specific functions to _render_ the output that the user sees.
+
+```{r, eval = F}
+server <- shinyServer(function(input, output) {
+   output$disPlot <- renderPlot({
+      x    <- faithful[, 2] 
+      bins <- seq(min(x), max(x), length.out = input$bins + 1)
+      hist(x, breaks = bins, col = 'darkgray', border = 'white')
+   })
+   output$disText <- renderText({
+     paste("Number of bins:", input$bins)
+   })
+})
+```
+
+## The App
+
+```{r, echo = FALSE}
+shinyApp(ui = shinyUI(fluidPage(
+   
+   # Application title
+   titlePanel("Old Faithful Geyser Data"),
+   
+   # Sidebar with a slider input for number of bins 
+   sidebarLayout(
+      sidebarPanel(
+         sliderInput("bins",
+                     "Number of bins:",
+                     min = 1,
+                     max = 50,
+                     value = 30)
+      ),
+      
+      # Show a plot of the generated distribution
+      mainPanel(
+         plotOutput("disPlot"),
+         textOutput("disText")
+      )
+   )
+)),
+
+# Define server logic required to draw a histogram
+server = function(input, output) {
+   
+   output$disPlot <- renderPlot({
+      # generate bins based on input$bins from ui.R
+      x    <- faithful[, 2] 
+      bins <- seq(min(x), max(x), length.out = input$bins + 1)
+      
+      # draw the histogram with the specified number of bins
+      hist(x, breaks = bins, col = 'darkgray', border = 'white')
+      
+      
+   })
+   output$disText <- renderText({
+     paste("Number of bins:", input$bins)
+   })
+})
 ```
 
