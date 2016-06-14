@@ -8,11 +8,13 @@ runtime: shiny
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(warning = F, comment = NA, message = F)
+library(dplyr)
+library(knitr)
 ```
 
 ## What is Shiny?
 
-```{r, echo = FALSE}
+```{r app_1st_time, echo = FALSE}
 shinyApp(ui = shinyUI(fluidPage(
    
    # Application title
@@ -84,7 +86,7 @@ server = function(input, output) {
 - `ui` contains the things the user sees and can change.
 - Split into _inputs_ and _outputs_.
 
-```{r, eval = F}
+```{r app_ui, eval = F}
 ui <- shinyUI(fluidPage(
    titlePanel("Old Faithful Geyser Data"),
    sidebarLayout(
@@ -106,7 +108,7 @@ ui <- shinyUI(fluidPage(
 - needs function dependent on _input_ and _output_.
 - specific functions to _render_ the output that the user sees.
 
-```{r, eval = F}
+```{r app_server, eval = F}
 server <- shinyServer(function(input, output) {
    output$disPlot <- renderPlot({
       x    <- faithful[, 2] 
@@ -121,7 +123,7 @@ server <- shinyServer(function(input, output) {
 
 ## The App
 
-```{r, echo = FALSE}
+```{r app_2nd_time, echo = FALSE}
 shinyApp(ui = shinyUI(fluidPage(
    
    # Application title
@@ -163,4 +165,21 @@ server = function(input, output) {
    })
 })
 ```
+
+
+## Inputs and Outputs
+
+- There are a wide range of inputs and outputs. 
+
+```{r shiny_io, echo = FALSE, results = 'asis'}
+shiny_io = data_frame(
+  inputs = c("Check box", "Radio Button", "Dates", "Numeric", "Text",
+             "File Upload", "Slider", "Drop down (select)"),
+  outputs = c("HTML", "Plots", "Tables", "Files to download", "Text", 
+              rep("", 3)))
+kable(shiny_io)
+```
+
+
+
 
