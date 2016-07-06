@@ -1,0 +1,13 @@
+# Shiny Presentation
+
+This `git` repository holds the presentation I gave to the InveRnessRUG on 20/06/16. The actual presentation is the `starter_for_shiny.Rmd` file and you will need the `shiny`, `DT`, `knitr` and `dplyr` packages installed to run it. To install these packages you can copy and paste the following into `R`.
+
+```{r, eval = F}
+install.packages("shiny", "DT", "dplyr", "knitr")
+```
+
+I have also included three `shiny` apps:
+
+- `demo_app`: is the basic app. 
+- `action_button_demo`: is the app that demonstrated using `actionButton()` and `isolate()` to control reactivity
+- `submit_demo`: is the app that demonstrated using `submitButton()` to control all reactivity.
