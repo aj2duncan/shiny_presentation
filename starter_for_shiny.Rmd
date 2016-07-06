@@ -589,6 +589,3 @@ server = function(input, output) {
 
 ### Any Questions?
 
-<div align = "center">
-![](images/calvin_math_machines.jpg)
-</div>
